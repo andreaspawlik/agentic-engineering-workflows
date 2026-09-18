@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "experiments": [
+    {
+      "id": "finite-input-guidance",
+      "title": "Require finite-input handling for numeric CLI operations",
+      "target_reason": "edge-case-gap",
+      "instruction_change": "Numeric operations must define and test behavior for nan and infinity when the CLI accepts floats.",
+      "baseline_prs": [
+        14
+      ],
+      "follow_up_prs": [
+        15
+      ],
+      "success_criteria": "The follow-up arithmetic PR passes review without an edge-case-gap rejection.",
+      "status": "initial-result",
+      "result": "PR 15 added finite-input validation and tests and was merged. Continue observing future arithmetic PRs."
+    },
+    {
+      "id": "workflow-readme-guidance",
+      "title": "Require README updates for workflow changes",
+      "target_reason": "documentation-gap",
+      "instruction_change": "Workflow and agent changes must update README usage documentation and link the relevant guide.",
+      "baseline_prs": [
+        19
+      ],
+      "follow_up_prs": [],
+      "success_criteria": "The next workflow or agent PR includes the required README usage update without a documentation-gap finding.",
+      "status": "guidance-updated",
+      "result": "PR 19 was retrospectively tagged for a missing README update. The README correction and instruction change are now in place; observe the next workflow PR."
+    },
+    {
+      "id": "workflow-input-validation",
+      "title": "Validate and normalize workflow input fields at their boundary",
+      "target_reason": "ci-failure",
+      "instruction_change": "Workflow and agent inputs must normalize documented equivalent forms, reject malformed values clearly, and test every accepted form.",
+      "baseline_prs": [],
+      "follow_up_prs": [
+        61
+      ],
+      "success_criteria": "The next three coordinator dispatches using numeric and hash-prefixed issue references complete issue selection without input-parsing failures.",
+      "status": "guidance-updated",
+      "result": "PR 61 fixed the coordinator failure caused by issue input #58. Observe the next three dispatches before evaluating the guidance."
+    },
+    {
+      "id": "project-agnostic-guidance",
+      "title": "Keep shared agent guidance independent of the consumer application",
+      "target_reason": "scope-creep",
+      "instruction_change": "Shared instructions and role agents read project identity and commands from agentic-project.json instead of hardcoding application-specific values.",
+      "baseline_prs": [],
+      "follow_up_prs": [],
+      "success_criteria": "The next two non-calculator consumer setups can use the shared guidance without editing calculator-specific instructions.",
+      "status": "guidance-updated",
+      "result": "The adapter contract and generic agent guidance are now present; validate the next non-calculator consumer setup."
+    }
+  ]
+}

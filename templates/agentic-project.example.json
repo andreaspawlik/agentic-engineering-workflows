@@ -1,0 +1,25 @@
+{
+  "project": {
+    "name": "your-project",
+    "language": "python",
+    "install_command": "REPLACE_WITH_INSTALL_COMMAND",
+    "test_command": "REPLACE_WITH_TEST_COMMAND",
+    "coverage_command": "REPLACE_WITH_COVERAGE_COMMAND",
+    "coverage_threshold": 90
+  },
+  "backlog": {
+    "label": "work-item",
+    "project_name": "Your Backlog"
+  },
+  "github": {
+    "project_owner": "YOUR_GITHUB_USER",
+    "project_number": 1,
+    "project_id": "PVT_...",
+    "status_field_id": "PVTSSF_...",
+    "status_options": {
+      "todo": "...",
+      "in_progress": "...",
+      "done": "..."
+    }
+  }
+}

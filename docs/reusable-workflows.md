@@ -54,6 +54,45 @@ jobs:
 This workflow writes acceptance metrics in the caller repository and uses the
 caller's `agentic-project.json` to mark merged issues Done.
 
+## Coordinator Example
+
+```yaml
+name: Level 5 coordinator
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        required: false
+        type: string
+      max_repair_iterations:
+        required: false
+        default: "2"
+        type: string
+      run_id:
+        required: false
+        type: string
+
+jobs:
+  coordinate:
+    uses: andreaspawlik/agentic-engineering-workflows/.github/workflows/level-5-coordinator.yml@v1.3.0
+    with:
+      workflow_ref: v1.3.0
+      issue_number: ${{ inputs.issue_number }}
+      max_repair_iterations: ${{ inputs.max_repair_iterations }}
+      run_id: ${{ inputs.run_id }}
+    secrets: inherit
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+      repository-projects: write
+```
+
+The reusable coordinator checks out the caller repository, reads its project
+contract, updates its configured Project status, and posts the initial state
+comment. `PROJECT_TOKEN` remains a secret in the caller repository.
+
 Pin a release tag or commit instead of `main`. Consumers should grant only the
 permissions required by the workflow and keep `PROJECT_TOKEN` in the consumer
 repository's secrets when Project writes are needed.

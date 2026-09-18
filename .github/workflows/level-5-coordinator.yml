@@ -1,0 +1,103 @@
+name: Reusable Level 5 coordinator
+
+on:
+  workflow_call:
+    inputs:
+      workflow_ref:
+        description: "Pinned reusable workflow repository ref"
+        required: false
+        type: string
+        default: v1.3.0
+      issue_number:
+        description: "Optional issue number; blank selects the lowest eligible issue"
+        required: false
+        type: string
+      max_repair_iterations:
+        description: "Maximum Developer repair iterations before human escalation"
+        required: false
+        default: "2"
+        type: string
+      run_id:
+        description: "Optional stable run ID for resuming a coordinator run"
+        required: false
+        type: string
+    secrets:
+      PROJECT_TOKEN:
+        required: false
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+  repository-projects: write
+
+jobs:
+  coordinate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: consumer
+
+      - uses: actions/checkout@v4
+        with:
+          repository: andreaspawlik/agentic-engineering-workflows
+          ref: ${{ inputs.workflow_ref }}
+          path: workflow
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Select eligible issue
+        working-directory: consumer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue list --state open --limit 100 --json number,title,state,labels,body > /tmp/issues.json
+          selected="$(python ../workflow/templates/scripts/coordinator.py select /tmp/issues.json "${{ inputs.issue_number }}")"
+          test "$selected" != "null"
+          selected_number="$(python -c 'import json, sys; print(json.load(sys.stdin)["number"])' <<< "$selected")"
+          echo "issue_number=$selected_number" >> "$GITHUB_OUTPUT"
+          echo "$selected"
+        id: selection
+
+      - name: Create coordinator state
+        working-directory: consumer
+        run: |
+          issue_number="${{ steps.selection.outputs.issue_number }}"
+          python ../workflow/templates/scripts/coordinator.py start "$issue_number" "${{ inputs.max_repair_iterations }}" "${{ inputs.run_id }}" > automation-state.json
+          cat automation-state.json
+
+      - name: Update Project status
+        working-directory: consumer
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+        run: |
+          issue_number="${{ steps.selection.outputs.issue_number }}"
+          project_id="$(python ../workflow/templates/scripts/project_config.py get github.project_id)"
+          status_field_id="$(python ../workflow/templates/scripts/project_config.py get github.status_field_id)"
+          in_progress_option="$(python ../workflow/templates/scripts/project_config.py get github.status_options.in_progress)"
+          backlog_name="$(python ../workflow/templates/scripts/project_config.py get backlog.project_name)"
+          test -n "$GH_TOKEN" || { echo "PROJECT_TOKEN secret is required to update $backlog_name status" >&2; exit 1; }
+          project_owner="$(python ../workflow/templates/scripts/project_config.py get github.project_owner)"
+          project_items="$(gh api graphql -f query='query($login:String!,$number:Int!){user(login:$login){projectV2(number:$number){items(first:100){nodes{id content{... on Issue{number}}}}}}}' -f login="$project_owner" -F number="$(python ../workflow/templates/scripts/project_config.py get github.project_number)")"
+          item_id="$(ISSUE_NUMBER="$issue_number" python -c 'import json, os, sys; nodes=json.load(sys.stdin)["data"]["user"]["projectV2"]["items"]["nodes"]; print(next((node["id"] for node in nodes if node.get("content", {}).get("number") == int(os.environ["ISSUE_NUMBER"])), ""))' <<< "$project_items")"
+          test -n "$item_id" || { echo "Issue #$issue_number is not in $backlog_name" >&2; exit 1; }
+          gh api graphql -f query='mutation($projectId:ID!,$itemId:ID!,$fieldId:ID!,$optionId:String!){updateProjectV2ItemFieldValue(input:{projectId:$projectId,itemId:$itemId,fieldId:$fieldId,value:{singleSelectOptionId:$optionId}}){projectV2Item{id}}}' -f projectId="$project_id" -f itemId="$item_id" -f fieldId="$status_field_id" -f optionId="$in_progress_option" >/dev/null
+
+      - name: Hand off to Architect
+        working-directory: consumer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          issue_number="${{ steps.selection.outputs.issue_number }}"
+          run_id="$(python -c 'import json; print(json.load(open("automation-state.json"))["run_id"])')"
+          state_comment="$(PYTHONPATH=../workflow/templates/scripts python -c 'import json; from coordinator import render_state_comment; print(render_state_comment(json.load(open("automation-state.json"))))')"
+          gh issue comment "$issue_number" --body "$state_comment\n\nCoordinator started. Run ID: $run_id. Architect must validate scope, dependencies, acceptance criteria, category, and edge cases before Developer implementation."
+
+      - name: Upload coordinator state
+        uses: actions/upload-artifact@v4
+        with:
+          name: coordinator-state
+          path: consumer/automation-state.json

@@ -33,6 +33,18 @@ autonomous.
 
 Greeter is the reference consumer and has completed an end-to-end run using all six versioned wrappers.
 
+## Learning Loop
+
+The workflow does not end at merge. After a PR closes, Acceptance Metrics records the outcome and prints feedback. A maintainer reviews that evidence, updates or creates an experiment in `metrics/experiments.json` when a reusable lesson emerges, and applies the resulting guidance, test, or workflow change to subsequent issues.
+
+The loop is:
+
+```text
+metrics -> experiment -> guidance/test/workflow change -> next issue
+```
+
+Experiment creation and interpretation are intentionally human-controlled in the current system.
+
 ## Start Here
 
 1. Read README.md and docs/project-contract.md.

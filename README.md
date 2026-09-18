@@ -20,7 +20,7 @@ The workflow code, templates, documentation, and supporting automation in this r
 The workflow supports this path:
 
 ```text
-Issue -> Architect -> Developer -> CI -> Reviewer -> merge -> metrics
+Issue -> Architect -> Developer -> CI -> Reviewer -> merge -> metrics -> experiment -> guidance
 ```
 
 It provides:
@@ -30,6 +30,8 @@ It provides:
 ## Automation Maturity
 
 This repository is a **bounded, human-supervised Level 5-style workflow**, not a fully autonomous coding system. The surrounding engineering loop is automated, while agent invocation and high-impact decisions remain human-controlled.
+
+After each closed PR, the Acceptance Metrics workflow records the outcome and prints feedback. A maintainer then reviews the metrics, updates or creates an experiment in `metrics/experiments.json` when the result reveals a reusable lesson, and applies the resulting instruction, test, or workflow improvement to future issues. This closes the learning loop.
 
 | Workflow step | Current state |
 | --- | --- |

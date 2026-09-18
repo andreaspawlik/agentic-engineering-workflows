@@ -1,0 +1,51 @@
+name: Reusable Project backlog sync
+
+on:
+  workflow_call:
+    inputs:
+      workflow_ref:
+        description: "Pinned reusable workflow repository ref"
+        required: false
+        type: string
+        default: v1.6.0
+    secrets:
+      PROJECT_TOKEN:
+        required: true
+
+permissions:
+  issues: read
+  repository-projects: write
+
+jobs:
+  add-to-backlog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: consumer
+
+      - uses: actions/checkout@v4
+        with:
+          repository: andreaspawlik/agentic-engineering-workflows
+          ref: ${{ inputs.workflow_ref }}
+          path: workflow
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Add issue to configured Project
+        working-directory: consumer
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+        run: |
+          configured_label="$(python ../workflow/templates/scripts/project_config.py get backlog.label)"
+          if ! gh issue view "${{ github.event.issue.number }}" --json labels --jq '.labels[].name' | grep -Fxq "$configured_label"; then
+            echo "Issue does not have configured backlog label: $configured_label"
+            exit 0
+          fi
+          issue_number="${{ github.event.issue.number }}"
+          project_id="$(python ../workflow/templates/scripts/project_config.py get github.project_id)"
+          project_owner="$(python ../workflow/templates/scripts/project_config.py get github.project_owner)"
+          issue_node_id="$(gh api graphql -f query='query($owner:String!,$repo:String!,$number:Int!){repository(owner:$owner,name:$repo){issue(number:$number){id}}}' -f owner="$project_owner" -f repo="${GITHUB_REPOSITORY#*/}" -F number="$issue_number" --jq '.data.repository.issue.id')"
+          gh api graphql -f query='mutation($projectId:ID!,$contentId:ID!){addProjectV2ItemById(input:{projectId:$projectId,contentId:$contentId}){item{id}}}' -f projectId="$project_id" -f contentId="$issue_node_id" >/dev/null

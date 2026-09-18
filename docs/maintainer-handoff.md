@@ -6,6 +6,20 @@ Use this guide when returning after a break or joining with a new coding agent.
 
 This repository owns reusable agentic engineering guidance and versioned GitHub Actions workflows. It is not an application repository. Consumer repositories own source code, tests, project configuration, and metrics history.
 
+## Automation Boundary
+
+The current system is human-supervised. GitHub automates issue/project status,
+CI, PR/CI reconciliation, merge-gate evaluation, backlog synchronization, and
+acceptance metrics. Humans still start the Architect, Developer, and Reviewer
+agents, assess review findings, approve the coordinator transition, and merge.
+
+The next level requires an authenticated agent runner with scoped credentials,
+isolated workspaces, durable agent outputs, policy checks, escalation and
+rollback behavior, and audit logs. Fully autonomous coding additionally needs a
+well-defined no-human-merge policy and strong controls around secrets, tests,
+review, and failure recovery. Do not describe the current system as fully
+autonomous.
+
 ## Current Releases
 
 | Capability | Release |

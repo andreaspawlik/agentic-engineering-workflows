@@ -26,6 +26,32 @@ Issue -> Architect -> Developer -> CI -> Reviewer -> merge -> metrics
 It provides:
 
 - Architect, Developer, and Reviewer agents for VS Code;
+
+## Automation Maturity
+
+This repository is a **bounded, human-supervised Level 5-style workflow**, not a fully autonomous coding system. The surrounding engineering loop is automated, while agent invocation and high-impact decisions remain human-controlled.
+
+| Workflow step | Current state |
+| --- | --- |
+| Issue selection and Project status | Automated by coordinator and Project workflows |
+| Architect validation | Agent-assisted; a human starts the Architect and the agent records the transition |
+| Developer implementation | Human starts the Developer agent; the agent changes code, tests, and opens a PR |
+| CI and coverage | Automated through reusable workflows |
+| PR and CI state reconciliation | Automated by commit/PR matching |
+| Code review | Human starts Reviewer; findings are reported, not silently applied |
+| Category-label consistency | Reviewer checks it as a minor metrics finding |
+| Merge decision | Human-controlled after the merge gate passes |
+| Acceptance metrics and Project Done status | Automated after PR closure |
+
+The next maturity step is authenticated agent orchestration: a trusted service
+would invoke Architect, Developer, and Reviewer with scoped credentials, persist
+agent outputs, enforce approvals, and safely resume or stop runs. Fully
+autonomous code development would additionally require reliable agent execution,
+workspace isolation, secret and permission boundaries, test and review policies,
+rollback/escalation behavior, audit logs, and an explicit policy for when
+merging is allowed without a human. Those capabilities are not implemented
+here.
+
 - issue and pull-request templates;
 - coordinator, CI reconciliation, merge-gate, backlog-sync, and acceptance
   metrics workflows;

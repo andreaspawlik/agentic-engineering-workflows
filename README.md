@@ -55,9 +55,10 @@ Pin release tags or commit SHAs. Do not call `main` in production.
 
 ## New Project Setup
 
-Follow these steps from an empty or existing application repository.
+Follow the common prerequisites, choose exactly one integration path, then
+complete the shared Project and first-issue steps.
 
-### 1. Prepare the application
+### 1. Common prerequisites
 
 Your consumer repository needs:
 
@@ -67,23 +68,66 @@ Your consumer repository needs:
 - install, test, and coverage commands; and
 - a default branch named `main`.
 
-### 2. Copy the local support files
+Create a user-owned GitHub Project with a Status field containing Todo, In
+Progress, and Done. Create the repository backlog label you plan to use, such
+as `work-item`, and create the matching category labels used by your project.
 
-Even when workflows are reusable, agents and repository instructions must be
-available in the consumer repository. Copy these directories/files:
+### 2A. Path A: copy the templates
+
+Use this path when you want the quickest setup or need to customize the
+workflow files locally. Copy the contents of `templates/` into the consumer
+repository:
 
 ```text
-.github/agents/
-.github/copilot-instructions.md
-.github/ISSUE_TEMPLATE/
-.github/pull_request_template.md
-scripts/project_config.py
-agentic-project.example.json -> agentic-project.json
+templates/.github/       -> .github/
+templates/scripts/       -> scripts/
+templates/docs/          -> docs/
+templates/agentic-project.example.json -> agentic-project.json
+templates/metrics/       -> metrics/
 ```
 
-Copy `docs/project-contract.md`, `docs/development-guide.md`, and
-`docs/architecture.md` when you want the supplied guidance. Keep application
-source, tests, and consumer-specific rules local.
+Keep the copied workflow implementations locally. Update the issue-template
+`labels:` value to your backlog label. This path makes local workflow edits
+simple, but fixes and upgrades must be copied into each consumer.
+
+### 2B. Path B: call versioned workflows
+
+Use this path when you want workflow fixes and upgrades to come from this
+repository. Copy only the consumer-local support files:
+
+```text
+templates/.github/agents/
+templates/.github/copilot-instructions.md
+templates/.github/ISSUE_TEMPLATE/
+templates/.github/pull_request_template.md
+templates/scripts/project_config.py
+templates/docs/
+templates/agentic-project.example.json -> agentic-project.json
+```
+
+Then create thin workflow wrappers in `.github/workflows/` that call the
+versioned releases listed above. For example:
+
+```yaml
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    uses: andreaspawlik/agentic-engineering-workflows/.github/workflows/ci.yml@v1.1.1
+    with:
+      workflow_ref: v1.1.1
+    permissions:
+      contents: read
+```
+
+Use the corresponding release for each other workflow. Use `secrets: inherit`
+for workflows that write Project or metrics data. Pin a release tag or commit
+SHA; do not call `main` in production.
 
 ### 3. Configure `agentic-project.json`
 
@@ -94,7 +138,7 @@ Copy `templates/agentic-project.example.json` and replace every placeholder:
   "project": {
     "name": "your-project",
     "language": "python",
-    "install_command": "pip install -e ".[dev]"",
+    "install_command": "pip install -e \".[dev]\"",
     "test_command": "pytest -q",
     "coverage_command": "pytest --cov=your_package --cov-report=xml -q",
     "coverage_threshold": 90
@@ -117,10 +161,7 @@ Copy `templates/agentic-project.example.json` and replace every placeholder:
 }
 ```
 
-Use the exact IDs from your user-owned GitHub Project. The Status field must
-have Todo, In Progress, and Done options.
-
-Validate locally:
+Use the exact IDs from your user-owned GitHub Project. Validate locally:
 
 ```bash
 python -m json.tool agentic-project.json
@@ -133,14 +174,11 @@ python scripts/project_config.py run project.coverage_command
 
 In the consumer repository:
 
-1. Create a user-owned Project and add a Status field with Todo, In Progress,
-   and Done options.
-2. Create the label named by `backlog.label` in `agentic-project.json`.
-3. Set the issue template `labels:` value to that same backlog label.
-4. Add repository secret `PROJECT_TOKEN` under **Settings -> Secrets and
+1. Set the issue-template `labels:` value to the configured backlog label.
+2. Add repository secret `PROJECT_TOKEN` under **Settings -> Secrets and
    variables -> Actions**. The token needs write access to the user-owned
    Project.
-5. Enable Actions for the repository.
+3. Enable Actions for the repository.
 
 Create exactly one primary category label for each issue. The issue body and
 GitHub label must agree, for example:
@@ -150,33 +188,7 @@ Primary category: architecture
 Labels: work-item, architecture
 ```
 
-### 5. Add workflow wrappers
-
-For each capability you use, create a thin wrapper in the consumer's
-`.github/workflows/`. Example CI wrapper:
-
-```yaml
-name: CI
-
-on:
-  pull_request:
-  push:
-    branches: [main]
-
-jobs:
-  test:
-    uses: andreaspawlik/agentic-engineering-workflows/.github/workflows/ci.yml@v1.1.1
-    with:
-      workflow_ref: v1.1.1
-    permissions:
-      contents: read
-```
-
-Use the corresponding release from the table above for the other workflows.
-Keep `PROJECT_TOKEN` in the consumer repository and use `secrets: inherit` for
-workflows that write to the Project or metrics.
-
-### 6. Create and run the first issue
+### 5. Create and run the first issue
 
 1. Create an issue using the backlog template.
 2. Set its primary category in the body.
@@ -187,7 +199,7 @@ workflows that write to the Project or metrics.
    unique run ID such as `project-issue-1-001`.
 7. Confirm the issue moves Todo -> In Progress.
 
-### 7. Run the agent workflow
+### 6. Run the agent workflow
 
 In VS Code, open the consumer repository and select the requested agent:
 
@@ -216,7 +228,7 @@ Architect validation, PR creation, CI success, and review approval update the
 coordinator state. Reviewer also checks that the PR category label matches the
 issue category; a missing label is a minor metrics finding, not a code blocker.
 
-### 8. Merge and verify
+### 7. Merge and verify
 
 After CI and the merge gate pass, merge the PR manually. Then verify:
 

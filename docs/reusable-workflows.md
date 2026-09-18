@@ -30,9 +30,34 @@ tests, package metadata, and project contract.
 
 ## Inputs And Permissions
 
+## Acceptance Metrics Example
+
+```yaml
+name: Acceptance metrics
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  record:
+    uses: andreaspawlik/agentic-engineering-workflows/.github/workflows/acceptance-metrics.yml@v1.2.0
+    with:
+      workflow_ref: v1.2.0
+    secrets: inherit
+    permissions:
+      contents: write
+      issues: read
+      repository-projects: write
+```
+
+This workflow writes acceptance metrics in the caller repository and uses the
+caller's `agentic-project.json` to mark merged issues Done.
+
 Pin a release tag or commit instead of `main`. Consumers should grant only the
 permissions required by the workflow and keep `PROJECT_TOKEN` in the consumer
 repository's secrets when Project writes are needed.
 
 The remaining coordinator, reconciliation, merge-gate, backlog-sync, and
-acceptance workflows will migrate to the same pattern in subsequent slices.
+The coordinator, reconciliation, merge-gate, and backlog-sync workflows will
+migrate to the same pattern in subsequent slices.

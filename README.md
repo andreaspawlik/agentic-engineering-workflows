@@ -11,6 +11,10 @@ The design is loosely inspired by the [AI Codebase Maturity Model](https://arxiv
 
 The paper provides the maturity-model framing; this repository turns selected concepts into practical GitHub Issues, VS Code agents, GitHub Actions, Project status transitions, review gates, and acceptance metrics.
 
+## Transparency
+
+The workflow code, templates, documentation, and supporting automation in this repository were developed with assistance from [GitHub Copilot](https://github.com/features/copilot). The repository owner remains responsible for the design decisions, review, testing, configuration, and published releases. Copilot assistance is disclosed here so users can understand how this generative-AI-supported engineering workflow was created.
+
 ## What You Get
 
 The workflow supports this path:

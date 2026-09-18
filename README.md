@@ -59,6 +59,37 @@ rollback/escalation behavior, audit logs, and an explicit policy for when
 merging is allowed without a human. Those capabilities are not implemented
 here.
 
+## Workflow Reference
+
+The reusable workflows are the GitHub automation layer. A consumer usually has
+a thin wrapper for each workflow under `.github/workflows/`. The wrappers define
+consumer triggers; the reusable workflows execute the shared implementation.
+
+| Workflow file | Trigger | Responsibility | Main consumer inputs |
+| --- | --- | --- | --- |
+| `ci.yml` | Pull request and push to `main` | Checks out the consumer, runs its configured install and coverage commands, and uploads coverage | `agentic-project.json` |
+| `acceptance-metrics.yml` | Closed pull request | Records acceptance outcome, prints feedback, commits metrics, and marks merged issues Done | `agentic-project.json`, `PROJECT_TOKEN` when Project writes are needed |
+| `level-5-coordinator.yml` | Manual workflow dispatch | Selects an eligible issue, creates coordinator state, moves it to In Progress, and posts the Architect handoff | Issue number, repair limit, run ID, `agentic-project.json`, `PROJECT_TOKEN` |
+| `level-5-pr-ci-reconciliation.yml` | Pull request and successful CI workflow-run events | Records Developer PR creation and CI success in coordinator state | Linked issue and coordinator comments |
+| `level-5-merge-gate.yml` | Pull request, review, and CI completion events | Evaluates whether coordinated PR state is eligible to merge | Linked issue state and PR number |
+| `project-backlog-sync.yml` | Issue opened, reopened, or labeled | Adds issues with the configured backlog label to the consumer Project | `agentic-project.json`, `PROJECT_TOKEN` |
+
+The copy-mode template also includes
+`templates/.github/workflows/level-5-coordinator-continue.yml`. It handles
+trusted issue comments such as coordinator transitions. Consumers using the
+versioned workflow path should keep an equivalent local continuation wrapper
+until that event-driven entrypoint is released as a reusable workflow.
+
+The normal lifecycle is:
+
+```text
+backlog sync -> coordinator -> Architect -> Developer PR -> CI reconciliation
+-> Reviewer -> merge gate -> manual merge -> acceptance metrics -> experiment loop
+```
+
+See [docs/reusable-workflows.md](docs/reusable-workflows.md) for wrapper
+examples, inputs, permissions, secrets, and release pinning.
+
 ## Choose An Integration Mode
 
 ### Fastest: copy the templates

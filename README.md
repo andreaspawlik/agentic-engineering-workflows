@@ -40,6 +40,11 @@ The reusable template tree contains:
 The detailed consumer checklist is documented in the source project's README
 and `templates/docs/project-contract.md`.
 
+The first centrally callable workflow is documented in
+[`docs/reusable-workflows.md`](docs/reusable-workflows.md). Consumers can pin
+the reusable CI workflow to `v1.1.0` while the remaining workflow migrations are
+completed.
+
 ## Versioning
 
 This repository is the extraction point for reusable workflow assets. The first

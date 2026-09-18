@@ -20,12 +20,17 @@ The workflow code, templates, documentation, and supporting automation in this r
 The workflow supports this path:
 
 ```text
-Issue -> Architect -> Developer -> CI -> Reviewer -> merge -> metrics -> experiment -> guidance
+Issue -> Architect -> Developer -> CI -> Reviewer -> merge -> metrics -> experiment -> guidance -> next issue
 ```
 
 It provides:
 
 - Architect, Developer, and Reviewer agents for VS Code;
+- issue and pull-request templates;
+- coordinator, CI reconciliation, merge-gate, backlog-sync, and acceptance
+  metrics workflows;
+- project-specific configuration through `agentic-project.json`; and
+- versioned reusable GitHub Actions releases.
 
 ## Automation Maturity
 
@@ -53,12 +58,6 @@ workspace isolation, secret and permission boundaries, test and review policies,
 rollback/escalation behavior, audit logs, and an explicit policy for when
 merging is allowed without a human. Those capabilities are not implemented
 here.
-
-- issue and pull-request templates;
-- coordinator, CI reconciliation, merge-gate, backlog-sync, and acceptance
-  metrics workflows;
-- project-specific configuration through `agentic-project.json`; and
-- versioned reusable GitHub Actions releases.
 
 ## Choose An Integration Mode
 
@@ -238,20 +237,29 @@ Primary category: architecture
 Labels: work-item, architecture
 ```
 
-### 5. Create and run the first issue
+## Run The Delivery And Learning Loop
+
+Project setup is a one-time activity. The following loop is repeated for each
+small backlog issue after setup is complete.
+
+```text
+prepare issue -> deliver change -> merge and measure -> experiment and improve -> next issue
+```
+
+### 1. Prepare and start an issue
 
 1. Create an issue using the backlog template.
-2. Set its primary category in the body.
-3. Apply the configured backlog label and matching category label.
-4. Add it to the Project and set Status to Todo.
+2. Set exactly one primary category in the issue body.
+3. Apply the configured backlog label and the matching category label.
+4. Add the issue to the configured Project and set Status to Todo.
 5. Open **Actions -> Level 5 coordinator -> Run workflow**.
 6. Choose branch `main` and enter the issue number, repair limit `2`, and a
    unique run ID such as `project-issue-1-001`.
 7. Confirm the issue moves Todo -> In Progress.
 
-### 6. Run the agent workflow
+### 2. Deliver the change
 
-In VS Code, open the consumer repository and select the requested agent:
+In VS Code, open the consumer repository and select the requested agent.
 
 Architect:
 
@@ -297,7 +305,7 @@ policies:
 Production repositories should prefer an independent human reviewer or a
 separately authenticated GitHub App operating under an explicit review policy.
 
-### 7. Merge and verify
+### 3. Merge and measure
 
 After CI and the merge gate pass, merge the PR manually. Then verify:
 
@@ -305,7 +313,36 @@ After CI and the merge gate pass, merge the PR manually. Then verify:
 - Project status is Done;
 - Acceptance Metrics completed successfully;
 - `metrics/acceptance-rate.json` contains the PR with its category; and
-- the feedback report was printed.
+- the engineering feedback report was printed.
+
+### 4. Experiment and improve
+
+Metrics collection is automatic; learning is currently human-controlled. After
+each closed PR:
+
+1. Review the Acceptance Metrics and engineering feedback workflow output.
+2. Compare the result with active entries in `metrics/experiments.json`.
+3. Add the PR as follow-up evidence when it tests an existing experiment.
+4. Create a new experiment only when a recurring failure or weak outcome leads
+   to a measurable instruction, test, or workflow change.
+5. Record the baseline, proposed change, success criteria, observation period,
+   and result.
+6. Keep, revise, or revert the change based on evidence.
+7. Apply the resulting guidance, test, or workflow improvement to the next
+   issue.
+
+Use this prompt with GitHub Copilot when reviewing the loop:
+
+```text
+Review metrics/acceptance-rate.json and metrics/experiments.json after the latest
+closed PR. Identify whether it provides evidence for an existing experiment or
+a recurring failure worth a new experiment. Do not create an experiment from a
+single isolated result without explaining the hypothesis, baseline, measurable
+success criteria, and future comparison.
+```
+
+The loop is complete only when delivery evidence has either informed an
+experiment or been explicitly judged not to require one.
 
 ## Troubleshooting
 

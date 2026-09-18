@@ -5,6 +5,12 @@ GitHub Issue at a time. This repository is infrastructure, not an application:
 your project keeps its own source code, tests, build commands, GitHub Project,
 and metrics history.
 
+## Background
+
+The design is loosely inspired by the [AI Codebase Maturity Model](https://arxiv.org/pdf/2604.09388), an arXiv paper describing how teams can move from basic AI assistance toward more autonomous engineering through progressively stronger instructions, tests, metrics, and feedback loops. This repository is an independent engineering implementation inspired by those ideas, not an official implementation or companion project of the paper.
+
+The paper provides the maturity-model framing; this repository turns selected concepts into practical GitHub Issues, VS Code agents, GitHub Actions, Project status transitions, review gates, and acceptance metrics.
+
 ## What You Get
 
 The workflow supports this path:

@@ -13,8 +13,9 @@ on:
         required: false
         type: string
         default: "3.12"
-    permissions:
-      contents: read
+
+permissions:
+  contents: read
 
 jobs:
   test:

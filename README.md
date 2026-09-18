@@ -257,6 +257,10 @@ After CI and the merge gate pass, merge the PR manually. Then verify:
 - **Reusable workflow cannot start:** check that the consumer wrapper uses a
   published release tag and that its permissions match the workflow's needs.
 
+## Maintainer Handoff
+
+See [docs/maintainer-handoff.md](docs/maintainer-handoff.md) for the current release map, validation commands, safe change procedure, consumer boundaries, and next work.
+
 ## Versioning
 
 This repository publishes versioned releases so consumers can upgrade

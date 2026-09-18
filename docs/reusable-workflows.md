@@ -16,9 +16,9 @@ on:
 
 jobs:
   test:
-    uses: andreaspawlik/agentic-engineering-workflows/.github/workflows/ci.yml@v1.1.0
+    uses: andreaspawlik/agentic-engineering-workflows/.github/workflows/ci.yml@v1.1.1
     with:
-      workflow_ref: v1.1.0
+      workflow_ref: v1.1.1
     permissions:
       contents: read
 ```
@@ -97,6 +97,4 @@ Pin a release tag or commit instead of `main`. Consumers should grant only the
 permissions required by the workflow and keep `PROJECT_TOKEN` in the consumer
 repository's secrets when Project writes are needed.
 
-The remaining coordinator, reconciliation, merge-gate, backlog-sync, and
-The coordinator, reconciliation, merge-gate, and backlog-sync workflows will
-migrate to the same pattern in subsequent slices.
+The coordinator, reconciliation, merge-gate, backlog-sync, and Acceptance Metrics workflows are now available as versioned reusable entrypoints. See `README.md` or `docs/maintainer-handoff.md` for the current release map.

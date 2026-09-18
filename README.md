@@ -278,6 +278,25 @@ Architect validation, PR creation, CI success, and review approval update the
 coordinator state. Reviewer also checks that the PR category label matches the
 issue category; a missing label is a minor metrics finding, not a code blocker.
 
+#### Single-maintainer review
+
+GitHub does not allow a pull-request author to approve their own PR. A token or
+repository setting cannot turn self-review into a genuine GitHub approval. For
+single-maintainer and demonstration repositories, use one of these practical
+policies:
+
+1. **Explicit coordinator self-review.** Run the Reviewer agent, assess its
+   findings, and record the repository's documented `self_reviewed` coordinator
+   transition. This records `review_source: self` and may allow the merge gate to
+   pass, but it must not be represented as an independent GitHub approval.
+2. **CI plus merge gate without required GitHub approval.** Do not require a
+   GitHub approval in branch protection. Require CI and the Level 5 merge gate,
+   run Reviewer as an advisory check, and keep the final merge manual. This is
+   the recommended policy for a single-maintainer consumer.
+
+Production repositories should prefer an independent human reviewer or a
+separately authenticated GitHub App operating under an explicit review policy.
+
 ### 7. Merge and verify
 
 After CI and the merge gate pass, merge the PR manually. Then verify:

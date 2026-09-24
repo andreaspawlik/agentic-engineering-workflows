@@ -13,7 +13,7 @@ The paper provides the maturity-model framing; this repository turns selected co
 
 ## Transparency
 
-The workflow code, templates, documentation, and supporting automation in this repository were developed with assistance from [GitHub Copilot](https://github.com/features/copilot). The repository owner remains responsible for the design decisions, review, testing, configuration, and published releases. Copilot assistance is disclosed here so users can understand how this generative-AI-supported engineering workflow was created.
+The workflow code, templates, documentation, and supporting automation in this repository were developed with assistance from [GitHub Copilot](https://github.com/features/copilot). This repository is provided as-is; anyone is free to use it, but at their own responsibility. Users are responsible for reviewing, testing, and validating the design decisions, configuration, and releases before adopting them in their own projects. Copilot assistance is disclosed here so users can understand how this generative-AI-supported engineering workflow was created.
 
 ## What You Get
 
